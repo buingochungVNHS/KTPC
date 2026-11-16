@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tự tính TL">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0f3d5e">
+<title>Tự tính điểm thể lực</title>
+<style>
+  :root {
+    --nen: #f2f4f7; --the: #fff; --chu: #1b2430; --mo: #6b7685; --vien: #d5dbe3;
+    --chinh: #0f3d5e; --that: #1d5fa8; --du: #b7791f; --du-nen: #fff6e0;
+    --G: #1e7d3c; --K: #1d5fa8; --D: #b7791f; --KD: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--nen); color: var(--chu);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    padding-bottom: env(safe-area-inset-bottom); }
+  header { background: var(--chinh); color: #fff; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; }
+  header h1 { margin: 0; font-size: 19px; }
+  header .phu { font-size: 13px; opacity: .85; }
+  main { max-width: 560px; margin: 0 auto; padding: 10px; }
+  .the { background: var(--the); border: 1px solid var(--vien); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .hai { display: flex; gap: 10px; }
+  .hai label { flex: 1; min-width: 0; }
+  label { display: block; font-size: 14px; color: var(--mo); }
+  input.o { font-size: 20px; padding: 8px 10px; height: 46px; border: 1.5px solid var(--vien); border-radius: 8px;
+    width: 100%; background: #fff; color: var(--chu); -webkit-appearance: none; appearance: none; }
+  input.o:focus { outline: none; border-color: var(--that); box-shadow: 0 0 0 3px rgba(29,95,168,.15); }
+  .ttin { margin-top: 8px; font-size: 15px; }
+  .ttin b { color: var(--chinh); }
+  .loi { color: var(--KD); }
+
+  .mon .dau { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .mon .ten { font-weight: 600; font-size: 16px; }
+  .seg { display: flex; border: 1.5px solid var(--vien); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .seg button { border: 0; background: #fff; font-size: 14px; padding: 0 12px; height: 34px; color: var(--mo); }
+  .seg button + button { border-left: 1.5px solid var(--vien); }
+  .seg button.chon[data-st="that"] { background: var(--that); color: #fff; }
+  .seg button.chon[data-st="du"] { background: var(--du); color: #fff; }
+  .seg button.chon[data-st="trong"] { background: #8a94a3; color: #fff; }
+  .nhap { display: flex; align-items: center; gap: 6px; }
+  .nhap input.o { flex: 1; min-width: 0; }
+  .nhap input.so2 { flex: 0 0 64px; text-align: center; }
+  .dv { color: var(--mo); font-size: 15px; white-space: nowrap; }
+  .diem { margin-left: auto; min-width: 68px; text-align: right; font-size: 20px; font-weight: 700; color: var(--chinh); white-space: nowrap; }
+  .diem small { font-size: 12px; font-weight: 400; color: var(--mo); }
+  .ghi { font-size: 13px; color: var(--mo); min-height: 18px; margin-top: 4px; }
+  .mon.st-du input.o { background: var(--du-nen); border-color: var(--du); color: #7a4f0e; }
+  .mon.st-du .diem { color: var(--du); }
+  .mon.st-trong input.o { background: #f0f1f3; color: #9aa3ae; }
+  .mon.st-trong .diem { color: #9aa3ae; }
+  .mon.nhac { border: 2px solid var(--du); box-shadow: 0 0 0 4px rgba(183,121,31,.18); }
+
+  .tl { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .tl .so { font-size: 30px; font-weight: 700; }
+  .xl { font-weight: 700; font-size: 18px; }
+  .xl-G { color: var(--G); } .xl-K { color: var(--K); } .xl-Đ { color: var(--D); } .xl-KĐ { color: var(--KD); }
+  .dukien { color: var(--du); font-size: 14px; font-weight: 600; }
+
+  .hangT { display: flex; gap: 6px; align-items: center; margin-top: 4px; }
+  .hangT input.o { flex: 1; min-width: 0; }
+  .hangT button { height: 46px; min-width: 46px; font-size: 18px; border: 1.5px solid var(--that); background: #fff;
+    color: var(--that); border-radius: 8px; font-weight: 600; }
+  .hangT button.xoa { border-color: var(--vien); color: var(--mo); font-size: 15px; font-weight: 400; }
+  #kqMucTieu { margin-top: 10px; font-size: 15px; }
+  #kqMucTieu p { margin: 6px 0; }
+  #kqMucTieu ul { margin: 6px 0; padding-left: 20px; }
+  #kqMucTieu .ok { color: var(--G); font-weight: 700; }
+  #kqMucTieu .ko { color: var(--KD); font-weight: 700; }
+  #kqMucTieu .nho { color: var(--mo); font-size: 13px; }
+  footer { text-align: center; padding: 6px 0 24px; }
+  footer button { border: 0; background: none; color: var(--mo); text-decoration: underline; font-size: 14px; padding: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Tự tính điểm thể lực</h1>
+  <div class="phu">Kiểm tra phân cấp kỹ thuật phi công, thành viên tổ bay</div>
+</header>
+<main>
+  <section class="the">
+    <div class="hai">
+      <label>Ngày sinh<input id="ngaySinh" class="o" inputmode="numeric" placeholder="dd/mm/yyyy" autocomplete="off"></label>
+      <label>Ngày kiểm tra<input id="ngayKT" class="o" inputmode="numeric" placeholder="dd/mm/yyyy" autocomplete="off"></label>
+    </div>
+    <div id="nhomTuoi" class="ttin"></div>
+  </section>
+
+  <div id="dsMon"></div>
+
+  <section class="the" id="ketQua"></section>
+
+  <section class="the">
+    <label for="T">Điểm trung bình muốn đạt</label>
+    <div class="hangT">
+      <input id="T" class="o" inputmode="decimal" placeholder="T" autocomplete="off">
+      <button type="button" data-t="5">5</button>
+      <button type="button" data-t="7">7</button>
+      <button type="button" data-t="8">8</button>
+      <button type="button" class="xoa" id="xoaT">Xóa</button>
+    </div>
+    <div id="kqMucTieu"></div>
+  </section>
+
+  <footer><button type="button" id="xoaHet">Xóa toàn bộ số liệu đã nhập</button></footer>
+</main>
+
+<script id="cham-diem">
+/* ===== KHỐI CHẤM ĐIỂM CHUNG – ỨNG DỤNG KIỂM TRA PHÂN CẤP =====
+ * Dùng chung, giống hệt nhau trong TONG_HOP.html và TU_TINH.html.
+ * Căn cứ: NGUYEN_TAC_KIEM_TRA_PHAN_CAP.md mục 4, 5, 6, 7.1.
+ * Bảng chuẩn lấy nguyên từ FILE CHẤM ĐIỂM KIỂM TRA 2025 (sheet CHẠY 1500m, CHẠY 50X2,
+ * VÒNG QUAY TRỤ, BƠI). Điểm trong Excel có sai số dấu phẩy động (5.00000000000002) đã làm tròn 1 chữ số.
+ */
+(function (root) {
+  'use strict';
+
+  var EPS = 1e-9;
+
+  // Môn: ten, donVi, chieu (-1: càng ít càng tốt; +1: càng nhiều càng tốt)
+  var MON = {
+    '1500m': { ten: 'Chạy 1500m', donVi: 'giây', chieu: -1 },
+    '50x2':  { ten: 'Chạy 50m×2', donVi: 'giây', chieu: -1 },
+    'vqt':   { ten: 'Vòng quay trụ', donVi: 'vòng/phút', chieu: +1 },
+    'boi':   { ten: 'Bơi', donVi: 'm', chieu: +1 }
+  };
+  var DS_MON = ['1500m', '50x2', 'vqt', 'boi'];
+  var TEN_NHOM = ['Dưới 36', 'Từ 36 đến dưới 46', 'Từ 46 đến dưới 52', 'Từ 52 trở lên'];
+
+  // Bảng chuẩn: [thành tích, điểm], xếp từ kém nhất đến tốt nhất. 1500m tính bằng giây.
+  var BANG = {
+    '1500m': [
+      /* <36 */ [[580,0.5],[561,1],[536,1.5],[501,2],[476,2.5],[451,3],[431,3.5],[411,4],[391,4.5],[390,5],[385,5.2],[380,5.4],[375,5.6],[370,5.8],[365,6],[360,6.2],[355,6.4],[350,6.6],[345,6.8],[340,7],[334,7.2],[328,7.4],[322,7.6],[316,7.8],[310,8],[308,8.2],[306,8.4],[304,8.6],[302,8.8],[300,9],[298,9.2],[296,9.4],[294,9.6],[292,9.8],[290,10]],
+      /* 36-46 */ [[640,0.5],[611,1],[581,1.5],[556,2],[521,2.5],[496,3],[471,3.5],[446,4],[421,4.5],[420,5],[415,5.2],[410,5.4],[405,5.6],[400,5.8],[395,6],[390,6.2],[385,6.4],[380,6.6],[375,6.8],[370,7],[364,7.2],[358,7.4],[352,7.6],[346,7.8],[340,8],[338,8.2],[336,8.4],[334,8.6],[332,8.8],[330,9],[328,9.2],[326,9.4],[324,9.6],[322,9.8],[320,10]],
+      /* 46-52 */ [[700,1],[670,1.5],[640,2],[610,2.5],[580,3],[550,3.5],[530,4],[510,4.5],[490,5],[486,5.2],[482,5.4],[478,5.6],[475,5.8],[472,6],[468,6.2],[464,6.4],[460,6.6],[455,6.8],[450,7],[446,7.2],[442,7.4],[438,7.6],[434,7.8],[430,8],[428,8.2],[426,8.4],[424,8.6],[422,8.8],[420,9],[418,9.2],[416,9.4],[414,9.6],[412,9.8],[410,10]],
+      /* >=52 */ [[760,1],[735,1.5],[705,2],[675,2.5],[645,3],[615,3.5],[585,4],[555,4.5],[525,5],[521,5.2],[517,5.4],[513,5.6],[509,5.8],[505,6],[501,6.2],[498,6.4],[495,6.6],[491,6.8],[487,7],[483,7.2],[478,7.4],[474,7.6],[470,7.8],[465,8],[463,8.2],[461,8.4],[459,8.6],[457,8.8],[455,9],[453,9.2],[451,9.4],[449,9.6],[447,9.8],[445,10]]
+    ],
+    '50x2': [
+      /* <36 */ [[20,0.5],[19.6,1],[19.4,1.5],[19.2,2],[19,2.5],[18.8,3],[18.4,3.5],[18,4],[17.6,4.5],[17.4,5],[17.3,5.4],[17.2,5.8],[17.1,6.2],[17,6.4],[16.9,6.6],[16.8,7.2],[16.7,7.8],[16.6,8],[16.4,8.2],[16.2,8.4],[16,8.6],[15.8,8.8],[15.6,9],[15.4,9.2],[15.2,9.4],[15,9.6],[14.8,9.8],[14.6,10]],
+      /* 36-46 */ [[20.4,0.5],[20,1],[19.6,1.5],[19.4,2],[19.2,2.5],[19,3],[18.8,3.5],[18.4,4],[18,4.5],[17.6,5],[17.5,5.8],[17.4,6.4],[17.3,6.6],[17.2,7.2],[17.1,7.8],[17,8],[16.8,8.2],[16.6,8.4],[16.4,8.6],[16.2,8.8],[16,9],[15.8,9.2],[15.6,9.4],[15.4,9.6],[15.2,9.8],[15,10]],
+      /* 46-52 */ [[21.2,0.5],[20.8,1],[20.4,1.5],[20,2],[19.6,2.5],[19.4,3],[19.2,3.5],[19,4],[18.8,4.5],[18.4,5],[18.3,5.4],[18.2,5.8],[18.1,6.2],[18,6.6],[17.9,7],[17.8,7.4],[17.7,7.8],[17.6,8],[17.4,8.2],[17.2,8.4],[17,8.6],[16.8,8.8],[16.6,9],[16.4,9.2],[16.2,9.4],[16,9.6],[15.8,9.8],[15.6,10]],
+      /* >=52 */ [[22.4,0.5],[22,1],[21.6,1.5],[21.2,2],[20.8,2.5],[20.4,3],[20,3.5],[19.6,4],[19.4,4.5],[19.2,5],[19,5.4],[18.8,5.8],[18.7,6.2],[18.6,6.6],[18.5,7],[18.4,7.2],[18.3,7.4],[18.2,7.6],[18.1,7.8],[18,8],[17.8,8.2],[17.6,8.4],[17.4,8.6],[17.2,8.8],[17,9],[16.8,9.2],[16.6,9.4],[16.4,9.6],[16.2,9.8],[16,10]]
+    ],
+    'vqt': [
+      /* <36 */ [[15,1],[20,2],[25,3],[30,4],[35,5],[36,5.4],[37,5.8],[38,6.2],[39,6.4],[40,6.6],[41,7],[42,7.2],[43,7.6],[44,7.8],[45,8],[47,8.2],[49,8.4],[51,8.6],[53,8.8],[55,9],[57,9.2],[59,9.4],[61,9.6],[63,9.8],[65,10]],
+      /* 36-46 */ [[10,1],[15,2],[20,3],[25,4],[30,5],[31,5.4],[32,5.8],[33,6.2],[34,6.4],[35,6.6],[36,7],[37,7.2],[38,7.6],[39,7.8],[40,8],[42,8.2],[44,8.4],[46,8.6],[48,8.8],[50,9],[52,9.2],[54,9.4],[56,9.6],[58,9.8],[60,10]],
+      /* 46-52 */ [[10,1],[15,2],[20,3],[25,4],[30,5],[31,5.4],[32,5.8],[33,6.2],[34,6.4],[35,6.6],[36,7],[37,7.4],[38,7.6],[39,7.8],[40,8],[41,8.2],[42,8.4],[43,8.6],[44,8.8],[45,9],[46,9.2],[47,9.4],[48,9.6],[49,9.8],[50,10]],
+      /* >=52 */ [[5,1],[10,2],[15,3],[20,4],[25,5],[26,5.4],[27,5.8],[28,6.2],[29,6.4],[30,6.6],[31,7],[32,7.4],[33,7.6],[34,7.8],[35,8],[36,8.2],[37,8.4],[38,8.6],[39,8.8],[40,9],[41,9.2],[42,9.4],[43,9.6],[44,9.8],[45,10]]
+    ],
+    'boi': [
+      /* <36 */ [[30,1],[40,2],[50,3],[60,4],[70,5],[72,5.2],[74,5.4],[76,5.6],[79,5.8],[83,6],[87,6.2],[91,6.4],[95,6.6],[99,6.8],[103,7],[107,7.2],[111,7.4],[115,7.6],[118,7.8],[120,8],[122,8.2],[124,8.4],[126,8.6],[128,8.8],[130,9],[135,9.2],[140,9.4],[145,9.6],[150,9.8],[160,10]],
+      /* 36-46 */ [[10,1],[20,2],[30,3],[40,4],[50,5],[52,5.2],[54,5.4],[56,5.6],[58,5.8],[60,6],[62,6.2],[66,6.4],[70,6.6],[74,6.8],[78,7],[82,7.2],[84,7.4],[86,7.6],[88,7.8],[90,8],[92,8.2],[94,8.4],[96,8.6],[98,8.8],[100,9],[105,9.2],[110,9.4],[115,9.6],[120,9.8],[130,10]],
+      /* 46-52 */ [[10,1],[20,2],[30,3],[40,4],[50,5],[52,5.2],[53,5.4],[55,5.6],[57,5.8],[59,6],[61,6.2],[63,6.4],[65,6.6],[68,6.8],[70,7],[72,7.2],[74,7.4],[76,7.6],[78,7.8],[80,8],[82,8.2],[84,8.4],[86,8.6],[88,8.8],[90,9],[92,9.2],[94,9.4],[96,9.6],[98,9.8],[100,10]],
+      /* >=52 */ [[5,1],[10,2],[20,3],[30,4],[40,5],[42,5.2],[44,5.4],[45,5.6],[46,5.8],[47,6],[48,6.2],[49,6.4],[50,6.6],[53,6.8],[55,7],[57,7.2],[59,7.4],[61,7.6],[63,7.8],[65,8],[67,8.2],[69,8.4],[71,8.6],[73,8.8],[75,9],[77,9.2],[79,9.4],[81,9.6],[83,9.8],[85,10]]
+    ]
+  };
+
+  /* ---------- Ngày, tuổi, nhóm tuổi (mục 4) ---------- */
+  // Nhận Date hoặc chuỗi 'YYYY-MM-DD' / 'DD/MM/YYYY'. Trả {y,m,d} hoặc null.
+  function docNgay(v) {
+    if (v == null || v === '') return null;
+    if (v instanceof Date) return isNaN(v) ? null : { y: v.getFullYear(), m: v.getMonth() + 1, d: v.getDate() };
+    var s = String(v).trim(), a;
+    if ((a = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return { y: +a[1], m: +a[2], d: +a[3] };
+    if ((a = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(s))) return { y: +a[3], m: +a[2], d: +a[1] };
+    return null;
+  }
+
+  // Tuổi = số năm tròn từ ngày sinh đến ngày kiểm tra.
+  function tinhTuoi(ngaySinh, ngayKiemTra) {
+    var s = docNgay(ngaySinh), k = docNgay(ngayKiemTra);
+    if (!s || !k) return null;
+    var t = k.y - s.y;
+    if (k.m < s.m || (k.m === s.m && k.d < s.d)) t--;
+    return t;
+  }
+
+  // 0: dưới 36; 1: 36–<46; 2: 46–<52; 3: từ 52.
+  function nhomTuoi(tuoi) {
+    if (tuoi == null || isNaN(tuoi)) return null;
+    if (tuoi < 36) return 0;
+    if (tuoi < 46) return 1;
+    if (tuoi < 52) return 2;
+    return 3;
+  }
+
+  /* ---------- Điểm từng môn (mục 5) ---------- */
+  function soHop(x) { return typeof x === 'number' && isFinite(x); }
+
+  function diemMon(mon, thanhTich, nhom) {
+    if (!soHop(thanhTich) || nhom == null || !BANG[mon]) return null;
+    var p = BANG[mon][nhom], c = MON[mon].chieu, k = c * thanhTich;
+    if (k < c * p[0][0] - EPS) return 0.5;                 // kém hơn mốc thấp nhất
+    if (k >= c * p[p.length - 1][0] - EPS) return 10;      // đạt hoặc tốt hơn mốc cao nhất
+    for (var i = 0; i < p.length - 1; i++) {
+      var x1 = p[i][0], y1 = p[i][1], x2 = p[i + 1][0], y2 = p[i + 1][1];
+      if (k >= c * x1 - EPS && k < c * x2 - EPS) {
+        return y1 + (y2 - y1) * (thanhTich - x1) / (x2 - x1);  // nội suy tuyến tính
+      }
+    }
+    return null;
+  }
+
+  // Điểm thể lực = trung bình 4 môn; thiếu môn nào thì null.
+  function diemTheLuc(d) {
+    var s = 0;
+    for (var i = 0; i < 4; i++) { if (!soHop(d[i])) return null; s += d[i]; }
+    return s / 4;
+  }
+
+  // Chấm 1 người: tt = {'1500m':giây,'50x2':giây,'vqt':vòng,'boi':m}
+  function chamTheLuc(tt, nhom) {
+    var dm = {}, arr = [];
+    DS_MON.forEach(function (m) { dm[m] = diemMon(m, tt ? tt[m] : null, nhom); arr.push(dm[m]); });
+    var tl = diemTheLuc(arr);
+    return { diemMon: dm, diemTheLuc: tl, xepLoai: xepLoai(tl) };
+  }
+
+  /* ---------- Xếp loại, làm tròn (mục 6) ---------- */
+  function xepLoai(diem) {
+    if (!soHop(diem)) return '';
+    if (diem >= 8 - EPS) return 'G';
+    if (diem >= 7 - EPS) return 'K';
+    if (diem >= 5 - EPS) return 'Đ';
+    return 'KĐ';
+  }
+  function lamTron2(x) {
+    if (!soHop(x)) return null;
+    return Math.round(Number((x * 100).toFixed(6))) / 100;
+  }
+
+  /* ---------- Tra ngược thành tích (mục 7.1) ---------- */
+  var BUOC = { '1500m': 1, '50x2': 0.001, 'vqt': 1, 'boi': 1 };
+  function lamTronDamBao(mon, x) {
+    if (mon === '1500m') return Math.floor(x + 1e-7);                 // xuống, giây
+    if (mon === '50x2') return Math.floor(x * 1000 + 1e-6) / 1000;    // xuống, 1/1000 giây
+    return Math.ceil(x - 1e-7);                                       // lên, số nguyên
+  }
+  // Trả {loai:'duThi'} | {loai:'khongDat'} | {loai:'thanhTich', thanhTich, diem}
+  function traNguoc(mon, diemCan, nhom) {
+    if (diemCan <= 0.5 + EPS) return { loai: 'duThi' };
+    if (diemCan > 10 + EPS) return { loai: 'khongDat' };
+    var p = BANG[mon][nhom], x;
+    if (diemCan <= p[0][1] + EPS) x = p[0][0];
+    else {
+      for (var i = 0; i < p.length - 1; i++) {
+        var x1 = p[i][0], y1 = p[i][1], x2 = p[i + 1][0], y2 = p[i + 1][1];
+        if (diemCan > y1 + EPS && diemCan <= y2 + EPS) { x = x1 + (x2 - x1) * (diemCan - y1) / (y2 - y1); break; }
+      }
+    }
+    x = lamTronDamBao(mon, x);
+    // bảo đảm thành tích sau làm tròn đạt điểm cần
+    var c = MON[mon].chieu, b = BUOC[mon];
+    for (var n = 0; n < 1000 && diemMon(mon, x, nhom) < diemCan - EPS; n++) {
+      x = mon === '50x2' ? Math.round((x + c * b) * 1000) / 1000 : x + c * b;
+    }
+    return { loai: 'thanhTich', thanhTich: x, diem: diemMon(mon, x, nhom) };
+  }
+
+  /* ---------- Mục tiêu điểm trung bình (mục 7.1) ----------
+   * cacMon: {'1500m': {trangThai:'that'|'du'|'trong', thanhTich}, ...}
+   * T: điểm trung bình muốn đạt.
+   */
+  function tinhMucTieu(T, cacMon, nhom) {
+    var S = 0, trong = [], diem = {}, coDu = false;
+    DS_MON.forEach(function (m) {
+      var o = cacMon[m] || {}, st = o.trangThai || 'trong';
+      var d = st === 'trong' ? null : diemMon(m, o.thanhTich, nhom);
+      if (d == null) { trong.push(m); diem[m] = null; }
+      else { S += d; diem[m] = d; if (st === 'du') coDu = true; }
+    });
+    var n = trong.length, canTong = 4 * T - S;
+    var kq = { T: T, S: S, n: n, canTong: canTong, diemMon: diem, monTrong: trong, duKien: coDu };
+
+    if (n === 0) {
+      kq.loai = 'du4Mon';
+      kq.diemTheLuc = S / 4;
+      kq.xepLoai = xepLoai(S / 4);
+      kq.thieu = canTong > EPS ? T - S / 4 : 0;   // điểm trung bình còn thiếu
+      return kq;
+    }
+    var canMoiMon = canTong / n;
+    kq.canMoiMon = canMoiMon;
+    if (canTong <= EPS) { kq.loai = 'datMucTieu'; return kq; }
+    if (canMoiMon <= 0.5 + EPS) { kq.loai = 'chiCanDuThi'; return kq; }
+    if (canMoiMon > 10 + EPS) {
+      kq.loai = 'khongDat';
+      kq.diemCaoNhat = (S + 10 * n) / 4;
+      kq.xepLoaiCaoNhat = xepLoai(kq.diemCaoNhat);
+      return kq;
+    }
+    kq.loai = n === 1 ? 'traNguoc' : 'chiaDeu';
+    kq.thanhTichCan = {};
+    trong.forEach(function (m) { kq.thanhTichCan[m] = traNguoc(m, canMoiMon, nhom); });
+    return kq;
+  }
+
+  var API = {
+    MON: MON, DS_MON: DS_MON, TEN_NHOM: TEN_NHOM, BANG: BANG,
+    docNgay: docNgay, tinhTuoi: tinhTuoi, nhomTuoi: nhomTuoi,
+    diemMon: diemMon, diemTheLuc: diemTheLuc, chamTheLuc: chamTheLuc,
+    xepLoai: xepLoai, lamTron2: lamTron2,
+    traNguoc: traNguoc, tinhMucTieu: tinhMucTieu
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  else root.ChamDiem = API;
+})(this);
+</script>
+<script>
+(function () {
+  'use strict';
+  var CD = window.ChamDiem;
+  var KHOA = 'KTPC_TU_TINH_v1';
+  // Khoảng thường gặp: ngoài khoảng thì hỏi xác nhận, không chặn (mục 7.3)
+  var KHOANG = { '1500m': [240, 1200], '50x2': [12, 30], 'vqt': [1, 120], 'boi': [1, 500] };
+  var TEN_XL = { 'G': 'Giỏi', 'K': 'Khá', 'Đ': 'Đạt', 'KĐ': 'Không đạt' };
+
+  /* ---------- Tiện ích ---------- */
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function soVN(x, k) { return x.toFixed(k).replace('.', ','); }
+  function soThapPhan(s) {
+    s = String(s == null ? '' : s).trim().replace(',', '.');
+    return /^(\d+(\.\d*)?|\.\d+)$/.test(s) ? parseFloat(s) : null;
+  }
+  function soNguyen(s) { s = String(s == null ? '' : s).trim(); return /^\d+$/.test(s) ? parseInt(s, 10) : null; }
+  // 50m×2: gõ liền không dấu → 3 chữ số cuối là phần nghìn giây; có dấu thì giữ nguyên
+  function doc50(s) {
+    s = String(s == null ? '' : s).trim();
+    if (/^\d+$/.test(s)) return parseInt(s, 10) / 1000;
+    return soThapPhan(s);
+  }
+  function doc1500(p, g) {
+    p = String(p || ''); g = String(g || '');
+    if (!/^\d+$/.test(p) || (g !== '' && !/^\d+$/.test(g))) return null;
+    return +p * 60 + (g === '' ? 0 : +g);
+  }
+  function dinhDangNgay(s) {
+    var d = String(s || '').replace(/\D/g, '').slice(0, 8);
+    if (d.length > 4) return d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
+    if (d.length > 2) return d.slice(0, 2) + '/' + d.slice(2);
+    return d;
+  }
+  function ngayHopLe(s) {
+    var a = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s || '');
+    if (!a) return false;
+    var d = +a[1], m = +a[2], y = +a[3], t = new Date(y, m - 1, d);
+    return y >= 1900 && t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d;
+  }
+  function homNay() { var t = new Date(); return pad(t.getDate()) + '/' + pad(t.getMonth() + 1) + '/' + t.getFullYear(); }
+  function fmtDiem(x) { var r = CD.lamTron2(x); return r == null ? '—' : soVN(r, 2); }
+  function fmtTT(mon, x) {
+    if (x == null) return '—';
+    if (mon === '1500m') return Math.floor(x / 60) + "'" + pad(x % 60) + '"';
+    if (mon === '50x2') return soVN(x, 3) + ' giây';
+    return x + (mon === 'boi' ? ' m' : ' vòng/phút');
+  }
+  function oXL(xl) { return xl ? '<span class="xl xl-' + xl + '">' + TEN_XL[xl] + ' (' + xl + ')</span>' : ''; }
+
+  /* ---------- Dữ liệu (lưu trên thiết bị) ---------- */
+  function moi() {
+    return { ngaySinh: '', ngayKT: '', T: '', mon: {
+      '1500m': { st: 'trong', p: '', g: '' }, '50x2': { st: 'trong', v: '' },
+      'vqt': { st: 'trong', v: '' }, 'boi': { st: 'trong', v: '' } } };
+  }
+  function taiLai() {
+    try { var o = JSON.parse(localStorage.getItem(KHOA)); if (o && o.mon && o.mon['1500m'] && o.mon.boi) return o; } catch (e) {}
+    return null;
+  }
+  function luu() { try { localStorage.setItem(KHOA, JSON.stringify(S)); } catch (e) {} }
+  var S = taiLai() || moi();
+  var ngayKT = S.ngayKT || homNay();   // đã nhập thì giữ; chưa nhập thì hôm nay
+  var daXacNhan = {};
+
+  function thanhTich(m) {
+    var o = S.mon[m];
+    if (m === '1500m') return doc1500(o.p, o.g);
+    if (m === '50x2') return doc50(o.v);
+    return soNguyen(o.v);
+  }
+  function coNhap(m) { var o = S.mon[m]; return m === '1500m' ? (o.p !== '' || o.g !== '') : o.v !== ''; }
+
+  /* ---------- Giao diện môn ---------- */
+  var NHAP = {
+    '1500m': '<input id="i1500p" class="o so2" inputmode="numeric" maxlength="2" placeholder="ph" aria-label="Phút" autocomplete="off">' +
+             '<span class="dv">\'</span>' +
+             '<input id="i1500g" class="o so2" inputmode="numeric" maxlength="2" placeholder="gi" aria-label="Giây" autocomplete="off">' +
+             '<span class="dv">"</span>',
+    '50x2': '<input id="i50x2" class="o" inputmode="decimal" placeholder="16237 / 16,237" autocomplete="off"><span class="dv">giây</span>',
+    'vqt': '<input id="ivqt" class="o" inputmode="numeric" placeholder="số vòng" autocomplete="off"><span class="dv">vòng/ph</span>',
+    'boi': '<input id="iboi" class="o" inputmode="numeric" placeholder="số mét" autocomplete="off"><span class="dv">m</span>'
+  };
+  function veMon() {
+    var h = '';
+    CD.DS_MON.forEach(function (m) {
+      h += '<section class="the mon" id="mon-' + m + '" data-mon="' + m + '">' +
+        '<div class="dau"><span class="ten">' + CD.MON[m].ten + '</span>' +
+        '<div class="seg"><button type="button" data-st="that">Thật</button><button type="button" data-st="du">Dự</button>' +
+        '<button type="button" data-st="trong">Trống</button></div></div>' +
+        '<div class="nhap">' + NHAP[m] + '<span class="diem" id="d-' + m + '">—</span></div>' +
+        '<div class="ghi" id="g-' + m + '"></div></section>';
+    });
+    $('dsMon').innerHTML = h;
+  }
+
+  function hoiKhoang(m, el) {
+    var x = thanhTich(m);
+    if (x == null) return;
+    var k = KHOANG[m], ly = '';
+    if (m === '1500m' && S.mon[m].g !== '' && +S.mon[m].g >= 60) ly = 'Số giây từ 60 trở lên.';
+    else if (x < k[0] || x > k[1]) ly = 'Ngoài khoảng thường gặp (' + fmtTT(m, k[0]) + ' – ' + fmtTT(m, k[1]) + ').';
+    if (!ly || daXacNhan[m] === String(x)) return;
+    setTimeout(function () {
+      if (window.confirm(CD.MON[m].ten + ': ' + fmtTT(m, x) + '\n' + ly + '\nGiữ nguyên?')) daXacNhan[m] = String(x);
+      else { el.focus(); el.select(); }
+    }, 0);
+  }
+
+  function sauKhiNhap(m) {
+    if (S.mon[m].st === 'trong' && coNhap(m)) S.mon[m].st = 'that';
+    luu(); capNhat();
+  }
+
+  function ganSuKien() {
+    $('ngaySinh').addEventListener('input', function () {
+      this.value = dinhDangNgay(this.value); S.ngaySinh = this.value; luu(); capNhat();
+      if (this.value.length === 10 && ngayHopLe(this.value)) $('i1500p').focus();
+    });
+    $('ngayKT').addEventListener('input', function () {
+      this.value = dinhDangNgay(this.value); ngayKT = this.value; S.ngayKT = this.value; luu(); capNhat();
+      if (this.value.length === 10 && ngayHopLe(this.value)) $('i1500p').focus();
+    });
+
+    var p = $('i1500p'), g = $('i1500g');
+    p.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 2);
+      this.value = v; S.mon['1500m'].p = v; sauKhiNhap('1500m');
+      // 1 chữ số 5–9 hoặc đủ 2 chữ số → sang ô giây; gõ "1" thì chờ chữ số thứ hai
+      if ((v.length === 1 && v >= '5' && v <= '9') || v.length === 2) { g.focus(); g.select(); }
+    });
+    g.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 2);
+      this.value = v; S.mon['1500m'].g = v; sauKhiNhap('1500m');
+      if (v.length === 2) { var n = $('i50x2'); n.focus(); n.select(); }
+    });
+    p.addEventListener('change', function () { if (S.mon['1500m'].g !== '') hoiKhoang('1500m', p); });
+    g.addEventListener('change', function () { hoiKhoang('1500m', g); });
+
+    ['50x2', 'vqt', 'boi'].forEach(function (m) {
+      var el = $('i' + m);
+      el.addEventListener('input', function () {
+        if (m !== '50x2') { var v = this.value.replace(/\D/g, ''); if (v !== this.value) this.value = v; }
+        S.mon[m].v = this.value.trim(); sauKhiNhap(m);
+      });
+      el.addEventListener('change', function () { hoiKhoang(m, el); });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.mon .seg button'), function (b) {
+      b.addEventListener('click', function () {
+        var m = b.closest('.mon').getAttribute('data-mon');
+        S.mon[m].st = b.getAttribute('data-st'); luu(); capNhat();
+      });
+    });
+
+    $('T').addEventListener('input', function () { S.T = this.value.trim(); luu(); capNhat(); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-t]'), function (b) {
+      b.addEventListener('click', function () { S.T = b.getAttribute('data-t'); $('T').value = S.T; luu(); capNhat(); });
+    });
+    $('xoaT').addEventListener('click', function () { S.T = ''; $('T').value = ''; luu(); capNhat(); });
+    $('xoaHet').addEventListener('click', function () {
+      if (!window.confirm('Xóa toàn bộ ngày sinh, thành tích và mục tiêu đã nhập?')) return;
+      S = moi(); ngayKT = homNay(); daXacNhan = {}; luu(); dienO(); capNhat();
+    });
+  }
+
+  function dienO() {
+    $('ngaySinh').value = S.ngaySinh; $('ngayKT').value = ngayKT; $('T').value = S.T;
+    $('i1500p').value = S.mon['1500m'].p; $('i1500g').value = S.mon['1500m'].g;
+    ['50x2', 'vqt', 'boi'].forEach(function (m) { $('i' + m).value = S.mon[m].v; });
+  }
+
+  /* ---------- Tính và hiển thị ---------- */
+  function capNhat() {
+    // Nhóm tuổi
+    var nhom = null, tt = '';
+    if (!S.ngaySinh) tt = 'Nhập ngày sinh để xác định nhóm tuổi.';
+    else if (!ngayHopLe(S.ngaySinh)) tt = '<span class="loi">Ngày sinh chưa đúng (dd/mm/yyyy).</span>';
+    else if (!ngayHopLe(ngayKT)) tt = '<span class="loi">Ngày kiểm tra chưa đúng (dd/mm/yyyy).</span>';
+    else {
+      var tuoi = CD.tinhTuoi(S.ngaySinh, ngayKT);
+      if (tuoi < 0) tt = '<span class="loi">Ngày kiểm tra trước ngày sinh.</span>';
+      else { nhom = CD.nhomTuoi(tuoi); tt = 'Tuổi <b>' + tuoi + '</b> – Nhóm tuổi: <b>' + CD.TEN_NHOM[nhom] + '</b>'; }
+    }
+    $('nhomTuoi').innerHTML = tt;
+
+    // Từng môn
+    var diem = {}, cacMon = {}, coDu = false, thieu = [];
+    CD.DS_MON.forEach(function (m) {
+      var o = S.mon[m], x = thanhTich(m), the = $('mon-' + m);
+      the.className = 'the mon st-' + o.st;
+      Array.prototype.forEach.call(the.querySelectorAll('.seg button'), function (b) {
+        b.classList.toggle('chon', b.getAttribute('data-st') === o.st);
+      });
+      var d = o.st === 'trong' ? null : CD.diemMon(m, x, nhom);
+      diem[m] = d;
+      cacMon[m] = { trangThai: o.st, thanhTich: x };
+      if (d == null) thieu.push(CD.MON[m].ten); else if (o.st === 'du') coDu = true;
+      $('d-' + m).innerHTML = d == null ? '—' : fmtDiem(d) + ' <small>đ</small>';
+      var ghi = '';
+      if (m === '50x2' && x != null) ghi = '= ' + fmtTT(m, x);
+      if (o.st === 'du') ghi += (ghi ? ' · ' : '') + 'thành tích dự điền';
+      else if (o.st === 'trong' && coNhap(m)) ghi += (ghi ? ' · ' : '') + 'không tính (Trống)';
+      $('g-' + m).textContent = ghi;
+    });
+
+    // Điểm thể lực
+    var tl = CD.diemTheLuc(CD.DS_MON.map(function (m) { return diem[m]; })), h;
+    if (nhom == null) h = '<div class="tl"><span>Điểm thể lực</span><span class="so">—</span></div>';
+    else if (tl == null) h = '<div class="tl"><span>Điểm thể lực</span><span class="so">—</span></div>' +
+      '<div class="ghi">Chưa đủ 4 môn. Còn trống: ' + thieu.join(', ') + '.</div>';
+    else h = '<div class="tl"><span>Điểm thể lực' + (coDu ? ' <span class="dukien">dự kiến</span>' : '') + '</span>' +
+      '<span class="so">' + fmtDiem(tl) + '</span></div><div>Xếp loại: ' + oXL(CD.xepLoai(tl)) +
+      (coDu ? ' <span class="dukien">(dự kiến)</span>' : '') + '</div>';
+    $('ketQua').innerHTML = h;
+
+    veMucTieu(nhom, cacMon);
+  }
+
+  function dongTT(m, r) {
+    var ten = CD.MON[m].ten;
+    if (r.loai !== 'thanhTich') return '<li>' + ten + ': chỉ cần dự thi</li>';
+    var ch = CD.MON[m].chieu < 0 ? 'không quá' : 'ít nhất';
+    return '<li>' + ten + ': ' + ch + ' <b>' + fmtTT(m, r.thanhTich) + '</b> (' + fmtDiem(r.diem) + ' đ)</li>';
+  }
+
+  function veMucTieu(nhom, cacMon) {
+    var o = $('kqMucTieu'), T = soThapPhan(S.T);
+    CD.DS_MON.forEach(function (m) { $('mon-' + m).classList.remove('nhac'); });
+    if (T == null) { o.innerHTML = S.T ? '<p class="loi">T chưa đúng.</p>' : '<p class="nho">Nhập T hoặc chọn 5 / 7 / 8.</p>'; return; }
+    if (nhom == null) { o.innerHTML = '<p class="nho">Cần ngày sinh hợp lệ để tính.</p>'; return; }
+    var k = CD.tinhMucTieu(T, cacMon, nhom), dk = k.duKien ? ' <span class="dukien">(dự kiến)</span>' : '', h = '';
+    var tenTrong = k.monTrong.map(function (m) { return CD.MON[m].ten; }).join(', ');
+    h += '<p class="nho">Tổng điểm môn Thật và Dự: ' + fmtDiem(k.S) + ' · Môn trống: ' + k.n +
+      ' · Cần thêm 4×T − S = ' + fmtDiem(k.canTong) + '</p>';
+
+    if (k.loai === 'du4Mon') {
+      h += '<p>Điểm thể lực: <b>' + fmtDiem(k.diemTheLuc) + '</b> – ' + oXL(k.xepLoai) + dk + '</p>';
+      h += k.thieu > 0
+        ? '<p class="ko">Chưa đạt T = ' + soVN(T, 2) + ': còn thiếu ' + fmtDiem(k.thieu) + ' điểm trung bình (' + fmtDiem(k.canTong) + ' điểm tổng 4 môn).</p>'
+        : '<p class="ok">Đạt mục tiêu T = ' + soVN(T, 2) + '.</p>';
+    } else if (k.loai === 'datMucTieu') {
+      h += '<p class="ok">Đã đạt mục tiêu' + dk + '.</p><p class="nho">Môn trống (' + tenTrong + ') chỉ cần dự thi.</p>';
+    } else if (k.loai === 'chiCanDuThi') {
+      h += '<p class="ok">Chỉ cần dự thi' + dk + '.</p><p class="nho">Môn trống (' + tenTrong + ') chỉ cần trung bình ' +
+        fmtDiem(k.canMoiMon) + ' điểm/môn (≤ 0,5 – mức thấp nhất khi dự thi).</p>';
+    } else if (k.loai === 'khongDat') {
+      h += '<p class="ko">Không đạt được T = ' + soVN(T, 2) + ' với kết quả hiện tại' + dk + '.</p>' +
+        '<p>Cần trung bình ' + fmtDiem(k.canMoiMon) + ' điểm/môn ở ' + k.n + ' môn trống (tối đa 10).</p>' +
+        '<p>Mức cao nhất còn đạt được (các môn trống đều 10): <b>' + fmtDiem(k.diemCaoNhat) + '</b> – ' + oXL(k.xepLoaiCaoNhat) + '</p>';
+      var coDu = false;
+      CD.DS_MON.forEach(function (m) { if (S.mon[m].st === 'du') { coDu = true; $('mon-' + m).classList.add('nhac'); } });
+      if (coDu) h += '<p class="nho">Có thể chỉnh các môn Dự (đang làm nổi); kết quả tính lại ngay khi sửa.</p>';
+    } else if (k.loai === 'traNguoc') {
+      var m1 = k.monTrong[0];
+      h += '<p>Môn trống cần ' + fmtDiem(k.canMoiMon) + ' điểm' + dk + ':</p><ul>' + dongTT(m1, k.thanhTichCan[m1]) + '</ul>';
+    } else if (k.loai === 'chiaDeu') {
+      h += '<p>Cần trung bình <b>' + fmtDiem(k.canMoiMon) + '</b> điểm/môn ở ' + k.n + ' môn trống' + dk + '. Nếu chia đều:</p><ul>';
+      k.monTrong.forEach(function (m) { h += dongTT(m, k.thanhTichCan[m]); });
+      h += '</ul><p class="nho">Dự điền thêm môn (chọn Dự) để tính chính xác thành tích cần ở môn còn lại.</p>';
+    }
+    o.innerHTML = h;
+  }
+
+  veMon(); ganSuKien(); dienO(); capNhat();
+
+  // Chạy không cần mạng khi mở từ web (cần tệp sw.js cùng thư mục)
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    var dangKy = function () { navigator.serviceWorker.register('sw.js').catch(function () {}); };
+    if (document.readyState === 'complete') dangKy(); else window.addEventListener('load', dangKy);
+  }
+
+  window.TuTinh = { doc50: doc50, doc1500: doc1500, dinhDangNgay: dinhDangNgay, ngayHopLe: ngayHopLe, fmtTT: fmtTT };
+})();
+</script>
+</body>
+</html>
