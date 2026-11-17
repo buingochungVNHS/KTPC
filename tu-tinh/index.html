@@ -77,6 +77,9 @@
   .nhan { display: inline-block; padding: 0 8px; border-radius: 6px; color: #fff; font-weight: 600; font-size: 13px; }
   .nhan-that { background: var(--that); } .nhan-du { background: var(--du); } .nhan-trong { background: #8a94a3; }
   header .pb { opacity: .8; }
+  #hoi { position: fixed; inset: 0; z-index: 9; background: rgba(0,0,0,.35); display: flex; align-items: flex-end; justify-content: center; }
+  #hoi .hop { background: var(--the); width: 100%; max-width: 560px; border-radius: 14px 14px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); font-size: 16px; }
+  .an { display: none !important; }
   footer { text-align: center; padding: 6px 0 24px; }
   footer button { border: 0; background: none; color: var(--mo); text-decoration: underline; font-size: 14px; padding: 10px; }
 </style>
@@ -84,7 +87,7 @@
 <body>
 <header>
   <h1>Tự tính điểm thể lực</h1>
-  <div class="phu">Kiểm tra phân cấp kỹ thuật phi công, thành viên tổ bay · <span class="pb">v2026.11.17</span></div>
+  <div class="phu">Kiểm tra phân cấp kỹ thuật phi công, thành viên tổ bay · <span class="pb">v2026.11.17-2</span></div>
 </header>
 <main>
   <section class="the">
@@ -121,6 +124,7 @@
 
   <footer><button type="button" id="xoaHet">Xóa toàn bộ số liệu đã nhập</button></footer>
 </main>
+<div id="hoi" class="an"></div>
 
 <script id="cham-diem">
 /* ===== KHỐI CHẤM ĐIỂM CHUNG – ỨNG DỤNG KIỂM TRA PHÂN CẤP =====
@@ -374,6 +378,20 @@
   }
   function oXL(xl) { return xl ? '<span class="xl xl-' + xl + '">' + TEN_XL[xl] + ' (' + xl + ')</span>' : ''; }
 
+  // Hộp hỏi riêng (thay confirm: HTML Viewer trên iOS không hiện được). Trả Promise<true|false>
+  function hoi(cauHoi, nutCo, nutKhong) {
+    var hop = $('hoi');
+    hop.innerHTML = '<div class="hop"><div class="cau" style="white-space:pre-line"></div><div class="hangT" style="margin-top:12px">' +
+      '<button type="button" class="xoa" id="hoiKhong" style="flex:1"></button><button type="button" id="hoiCo" style="flex:1"></button></div></div>';
+    hop.querySelector('.cau').textContent = cauHoi; $('hoiCo').textContent = nutCo || 'Đồng ý'; $('hoiKhong').textContent = nutKhong || 'Hủy';
+    hop.classList.remove('an');
+    return new Promise(function (xong) {
+      function dong(kq) { hop.classList.add('an'); hop.innerHTML = ''; xong(kq); }
+      $('hoiCo').onclick = function () { dong(true); };
+      $('hoiKhong').onclick = function () { dong(false); };
+    });
+  }
+
   /* ---------- Dữ liệu (lưu trên thiết bị) ---------- */
   function moi() {
     return { ngaySinh: '', ngayKT: '', T: '', mon: {
@@ -428,8 +446,9 @@
     else if (x < k[0] || x > k[1]) ly = 'Ngoài khoảng thường gặp (' + fmtTT(m, k[0]) + ' – ' + fmtTT(m, k[1]) + ').';
     if (!ly || daXacNhan[m] === String(x)) return;
     setTimeout(function () {
-      if (window.confirm(CD.MON[m].ten + ': ' + fmtTT(m, x) + '\n' + ly + '\nGiữ nguyên?')) daXacNhan[m] = String(x);
-      else { el.focus(); el.select(); }
+      hoi(CD.MON[m].ten + ': ' + fmtTT(m, x) + '\n' + ly + '\nGiữ nguyên?', 'Giữ nguyên', 'Sửa lại').then(function (ok) {
+        if (ok) daXacNhan[m] = String(x); else { el.focus(); el.select(); }
+      });
     }, 0);
   }
 
@@ -485,8 +504,9 @@
     });
     $('xoaT').addEventListener('click', function () { S.T = ''; $('T').value = ''; luu(); capNhat(); });
     $('xoaHet').addEventListener('click', function () {
-      if (!window.confirm('Xóa toàn bộ ngày sinh, thành tích và mục tiêu đã nhập?')) return;
-      S = moi(); ngayKT = homNay(); daXacNhan = {}; luu(); dienO(); capNhat();
+      hoi('Xóa toàn bộ ngày sinh, thành tích và mục tiêu đã nhập?', 'Xóa').then(function (ok) {
+        if (!ok) return; S = moi(); ngayKT = homNay(); daXacNhan = {}; luu(); dienO(); capNhat();
+      });
     });
   }
 
