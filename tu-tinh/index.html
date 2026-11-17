@@ -73,6 +73,10 @@
   #kqMucTieu .ok { color: var(--G); font-weight: 700; }
   #kqMucTieu .ko { color: var(--KD); font-weight: 700; }
   #kqMucTieu .nho { color: var(--mo); font-size: 13px; }
+  .giaiThich { font-size: 14px; color: var(--mo); line-height: 1.6; }
+  .nhan { display: inline-block; padding: 0 8px; border-radius: 6px; color: #fff; font-weight: 600; font-size: 13px; }
+  .nhan-that { background: var(--that); } .nhan-du { background: var(--du); } .nhan-trong { background: #8a94a3; }
+  header .pb { opacity: .8; }
   footer { text-align: center; padding: 6px 0 24px; }
   footer button { border: 0; background: none; color: var(--mo); text-decoration: underline; font-size: 14px; padding: 10px; }
 </style>
@@ -80,15 +84,23 @@
 <body>
 <header>
   <h1>Tự tính điểm thể lực</h1>
-  <div class="phu">Kiểm tra phân cấp kỹ thuật phi công, thành viên tổ bay</div>
+  <div class="phu">Kiểm tra phân cấp kỹ thuật phi công, thành viên tổ bay · <span class="pb">v2026.11.17</span></div>
 </header>
 <main>
   <section class="the">
     <div class="hai">
       <label>Ngày sinh<input id="ngaySinh" class="o" inputmode="numeric" placeholder="dd/mm/yyyy" autocomplete="off"></label>
-      <label>Ngày kiểm tra<input id="ngayKT" class="o" inputmode="numeric" placeholder="dd/mm/yyyy" autocomplete="off"></label>
+      <label>Ngày cuối đợt KT<input id="ngayKT" class="o" inputmode="numeric" placeholder="dd/mm/yyyy" autocomplete="off"></label>
     </div>
+    <div class="ghi">Đợt kiểm tra nhiều ngày: nhập ngày thi cuối cùng của đợt – tuổi tính đến ngày này.</div>
     <div id="nhomTuoi" class="ttin"></div>
+  </section>
+
+  <section class="the giaiThich">
+    Mỗi môn chọn một trạng thái:
+    <span class="nhan nhan-that">Thật</span> thành tích đã thi, tính vào điểm;
+    <span class="nhan nhan-du">Dự</span> thành tích dự điền để tính thử (khác màu, kết quả ghi "dự kiến");
+    <span class="nhan nhan-trong">Trống</span> chưa thi, không tính – dùng ô "Điểm trung bình muốn đạt" để biết cần đạt bao nhiêu.
   </section>
 
   <div id="dsMon"></div>
@@ -490,10 +502,10 @@
     var nhom = null, tt = '';
     if (!S.ngaySinh) tt = 'Nhập ngày sinh để xác định nhóm tuổi.';
     else if (!ngayHopLe(S.ngaySinh)) tt = '<span class="loi">Ngày sinh chưa đúng (dd/mm/yyyy).</span>';
-    else if (!ngayHopLe(ngayKT)) tt = '<span class="loi">Ngày kiểm tra chưa đúng (dd/mm/yyyy).</span>';
+    else if (!ngayHopLe(ngayKT)) tt = '<span class="loi">Ngày cuối đợt KT chưa đúng (dd/mm/yyyy).</span>';
     else {
       var tuoi = CD.tinhTuoi(S.ngaySinh, ngayKT);
-      if (tuoi < 0) tt = '<span class="loi">Ngày kiểm tra trước ngày sinh.</span>';
+      if (tuoi < 0) tt = '<span class="loi">Ngày cuối đợt KT trước ngày sinh.</span>';
       else { nhom = CD.nhomTuoi(tuoi); tt = 'Tuổi <b>' + tuoi + '</b> – Nhóm tuổi: <b>' + CD.TEN_NHOM[nhom] + '</b>'; }
     }
     $('nhomTuoi').innerHTML = tt;
